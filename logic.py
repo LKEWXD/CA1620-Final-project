@@ -1,7 +1,6 @@
 from PyQt6.QtWidgets import *
 from gui import *
 import os
-import time
 import csv
 
 class Logic(QMainWindow, Ui_MainWindow):
@@ -21,7 +20,7 @@ class Logic(QMainWindow, Ui_MainWindow):
         else:
             self.ID_list = []
 
-        if os.path.isfile('vote_results.csv'):
+        if os.path.isfile('vote_results.csv'): # checks if counts of votes exists and initializes variables
             read_count = csv.reader(open('vote_results.csv'))
 
             try:
@@ -36,21 +35,21 @@ class Logic(QMainWindow, Ui_MainWindow):
             self.votes_Jane = 0
 
     def submit(self):
+
         ID = self.entry_ID.text().strip()
-        if ID.isnumeric() == False or len(ID) != 8:
+
+        if ID.isnumeric() == False or len(ID) != 8: # checks if len == 8 and is only numbers
             self.label_error_msg.setText('Invalid ID: ID consists of 8 numbers with no spaces or non-numeric characters')
             self.label_error_msg.show()
             return
 
-        for index, stored_ID in enumerate(self.ID_list):
+        for index, stored_ID in enumerate(self.ID_list): # checks if ID has already been used
             if self.ID_list[index][0] == ID:
                 self.label_error_msg.setText('Invalid ID: Cannot vote twice')
                 self.label_error_msg.show()
                 return
 
-        print('pass ID check')
-
-        if self.radioButton_Jane.isChecked():
+        if self.radioButton_Jane.isChecked(): # candidate selection and error handling
             self.votes_Jane += 1
             self.vote_selection = 'Jane'
         elif self.radioButton_John.isChecked():
@@ -61,23 +60,21 @@ class Logic(QMainWindow, Ui_MainWindow):
             self.label_error_msg.show()
             return
 
-        vote_record = [ID, self.vote_selection]
-        print(vote_record)
-        self.ID_list.append(vote_record)
+        vote_data = [ID, self.vote_selection]
+        self.ID_list.append(vote_data) # adds voter ID and choice to output
 
-
-        with open('voter_ID_records.csv', 'w', newline='', encoding='utf-8') as csv_file:
+        with open('voter_ID_records.csv', 'w', newline='', encoding='utf-8') as csv_file: # saves output to csv file
             writer = csv.writer(csv_file)
             writer.writerows(self.ID_list)
 
-        with open('vote_results.csv', 'w', newline='', encoding='utf-8') as csv_file_votes:
+        with open('vote_results.csv', 'w', newline='', encoding='utf-8') as csv_file_votes: # saves vote counts to a csv file
             total = self.votes_Jane + self.votes_John
             vote_results_list = [["Vote Total",total], ["John",self.votes_John], ["Jane",self.votes_Jane]]
             writer = csv.writer(csv_file_votes)
             for item in vote_results_list:
                 writer.writerow(item)
 
-        self.label_error_msg.hide()
+        self.label_error_msg.hide() # resets all items in menu
         self.entry_ID.clear()
         self.group_candidates.setExclusive(False)
         self.radioButton_John.setChecked(False)
